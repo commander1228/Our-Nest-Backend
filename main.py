@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, Depends
-from controllers import auth
+from controllers import auth, nest
 from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
 import os
@@ -37,3 +37,15 @@ async def loginUser(request: auth.Credentials):
 @app.post("/auth/refresh", response_model=auth.AuthResponse)
 async def refresh(request: auth.RefreshRequest):
     return await auth.refresh_token(request.refresh_token)
+
+
+@protected.post("/nest/create", response_model = nest.NestCreateRequest)
+async def create_nest(request: nest.NestCreateRequest,user=Depends(auth.get_current_user)):
+    return await nest.createNest(request,user)
+
+@protected.get("/nest/list", response_model=nest.GetNestsResponse)
+async def get_nests(user=Depends(auth.get_current_user)):
+    return await nest.getNestsByUser(user)
+
+
+app.include_router(protected)

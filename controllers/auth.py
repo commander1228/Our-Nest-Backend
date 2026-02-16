@@ -32,7 +32,7 @@ async def registerUser(request_data: dict):
         response = supabase.auth.sign_up(request_data)
 
         if response.user:
-            await User.create(id=response.user.id, email=response.user.email)
+            await User.create(id=response.user.id, email=response.user.email,display_name ="default")
 
             return AuthResponse(
                 access_token=response.session.access_token,
