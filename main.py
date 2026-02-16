@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, APIRouter, Depends
 from controllers import auth
 from tortoise.contrib.fastapi import register_tortoise
 from dotenv import load_dotenv
@@ -16,6 +16,8 @@ register_tortoise(
     add_exception_handlers=True,
 )
 
+protected = APIRouter(dependencies=[Depends(auth.get_current_user)])
+
 
 @app.get("/")
 def root():
@@ -24,4 +26,14 @@ def root():
 
 @app.post("/register", response_model=auth.AuthResponse)
 async def registerUser(request: auth.Credentials):
-    return await auth.registerUser(request.email, request.password)
+    return await auth.registerUser(request.model_dump())
+
+
+@app.post("/login", response_model=auth.AuthResponse)
+async def loginUser(request: auth.Credentials):
+    return await auth.loginUser(request.model_dump())
+
+
+@app.post("/refresh", response_model=auth.AuthResponse)
+async def refresh(request: auth.RefreshRequest):
+    return await auth.refresh_token(request.refresh_token)
